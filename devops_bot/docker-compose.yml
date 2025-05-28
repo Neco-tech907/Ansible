@@ -2,14 +2,18 @@ version: '3.8'
 
 services:
   postgres-primary:
-    image: db_image:latest
+    build:
+      context: ./db
+      dockerfile: Dockerfile
     container_name: postgres_primary
     networks:
       postgres_net:
         ipv4_address: 192.168.9.100
 
   postgres-replica-1:
-    image: db_repl_image:latest
+    build:
+      context: ./db_repl
+      dockerfile: Dockerfile.replica
     container_name: postgres_replica_1
     environment:
       PGDATA: /var/lib/postgresql/data
@@ -21,7 +25,9 @@ services:
     command: ["/usr/local/bin/setup-replica.sh"]
 
   tg-bot:
-    image: bot_image:latest
+    build:
+      context: ./bot
+      dockerfile: Dockerfile.bot
     container_name: tg_bot
     environment:
       DB_HOST: postgres_primary
