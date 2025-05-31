@@ -1,0 +1,53 @@
+---
+- name: Setup PostgreSQL Master
+  hosts: db_master
+  become: yes
+  vars:
+    pg_conf_dir: /etc/postgresql/15/main
+    local_config_dir: ./master_configs
+
+  tasks:
+    - name: Установить PostgreSQL и contrib-пакет
+      apt:
+        name:
+          - postgresql
+          - postgresql-contrib
+        state: present
+        update_cache: yes
+
+    - name: Остановить PostgreSQL перед заменой конфигов
+      service:
+        name: postgresql
+        state: stopped
+
+    - name: Удалить текущий postgresql.conf
+      file:
+        path: "{{ pg_conf_dir }}/postgresql.conf"
+        state: absent
+
+    - name: Удалить текущий pg_hba.conf
+      file:
+        path: "{{ pg_conf_dir }}/pg_hba.conf"
+        state: absent
+
+    - name: Скопировать кастомный postgresql.conf
+      copy:
+        src: "{{ local_config_dir }}/postgresql.conf"
+        dest: "{{ pg_conf_dir }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: '0644'
+
+    - name: Скопировать кастомный pg_hba.conf
+      copy:
+        src: "{{ local_config_dir }}/pg_hba.conf"
+        dest: "{{ pg_conf_dir }}/pg_hba.conf"
+        owner: postgres
+        group: postgres
+        mode: '0640'
+
+    - name: Запустить PostgreSQL после замены конфигов
+      service:
+        name: postgresql
+        state: started
+        enabled: yes

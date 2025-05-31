@@ -1,0 +1,13 @@
+[db_master]
+192.168.237.210 ansible_user=raul ansible_password=1234
+
+[db_slave]
+192.168.237.225 ansible_user=raul ansible_password=1234
+
+[tg_bot_server]
+192.168.237.211 ansible_user=raul ansible_password=1234
+
+[all_servers:children]
+db_master
+db_slave
+tg_bot_server

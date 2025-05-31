@@ -1,0 +1,57 @@
+---
+- name: Настройка реплики PostgreSQL
+  hosts: db_slave
+  become: yes
+  vars:
+    pg_version: 15
+    data_dir: "/var/lib/postgresql/{{ pg_version }}/main"
+    config_src: "replica_configs/postgresql.conf"
+    config_dest: "/etc/postgresql/{{ pg_version }}/main/postgresql.conf"
+    master_host: "192.168.237.210"
+    repl_user: "repl_user"
+
+  tasks:
+
+    - name: Установка PostgreSQL
+      apt:
+        name: "postgresql-{{ pg_version }}"
+        state: present
+        update_cache: yes
+
+    - name: Замена postgresql.conf на конфигурацию реплики
+      copy:
+        src: "{{ config_src }}"
+        dest: "{{ config_dest }}"
+        owner: postgres
+        group: postgres
+        mode: '0644'
+
+    - name: Остановка службы PostgreSQL
+      service:
+        name: postgresql
+        state: stopped
+
+    - name: Очистка каталога данных PostgreSQL
+      file:
+        path: "{{ data_dir }}"
+        state: absent
+
+    - name: Создание нового каталога данных
+      file:
+        path: "{{ data_dir }}"
+        state: directory
+        owner: postgres
+        group: postgres
+        mode: '0700'
+
+    - name: Инициализация реплики с помощью pg_basebackup
+      become_user: postgres
+      shell: |
+        pg_basebackup -R -h {{ master_host }} -U {{ repl_user }} -D {{ data_dir }} -P -v
+      environment:
+        PGPASSWORD: "1234"
+
+    - name: Запуск службы PostgreSQL
+      service:
+        name: postgresql
+        state: started

@@ -1,1 +1,43 @@
-p
+---
+- name: Deploy Telegram Monitoring Bot
+  hosts: tg_bot_server
+  become: yes
+  vars:
+    repo_url: https://github.com/Neco-tech907/Monitoring_tg_bot.git
+    app_dir: /home/raul
+    bot_dir: /home/raul/Monitoring_tg_bot
+
+  tasks:
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - git
+          - python3
+          - python3-venv
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Clone the repository into /home/raul
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ bot_dir }}"
+        version: HEAD
+
+    - name: Create Python virtual environment
+      command: python3 -m venv venv
+      args:
+        chdir: "{{ bot_dir }}"
+        creates: venv
+
+    - name: Install Python dependencies in virtualenv
+      shell: |
+        ./venv/bin/pip install --upgrade pip
+        ./venv/bin/pip install -r requirements.txt
+      args:
+        chdir: "{{ bot_dir }}"
+
+    - name: Run the Telegram bot
+      shell: nohup ./venv/bin/python bot.py &
+      args:
+        chdir: "{{ bot_dir }}"
