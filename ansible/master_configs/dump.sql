@@ -294,3 +294,16 @@ SET row_security = off;
 --
 -- PostgreSQL database cluster dump complete
 --
+DO
+$$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles WHERE rolname = 'repl_user'
+    ) THEN
+        CREATE ROLE repl_user WITH LOGIN REPLICATION PASSWORD '1234';
+    END IF;
+END
+$$;
+
+
+ALTER USER postgres WITH PASSWORD '1234';
