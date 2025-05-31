@@ -1,5 +1,5 @@
 ---
-- name: Deploy Telegram Monitoring Bot
+- name: Развёртывание Telegram-бота для мониторинга
   hosts: tg_bot_server
   become: yes
   vars:
@@ -8,7 +8,7 @@
     bot_dir: /tmp/Monitoring_tg_bot
 
   tasks:
-    - name: Ensure required packages are installed
+    - name: Убедиться, что установлены необходимые пакеты
       apt:
         name:
           - git
@@ -18,26 +18,21 @@
         state: present
         update_cache: yes
 
-    - name: Clone the repository into /home/raul
+    - name: Клонировать репозиторий в /tmp
       git:
         repo: "{{ repo_url }}"
         dest: "{{ bot_dir }}"
         version: HEAD
 
-    - name: Create Python virtual environment
+    - name: Создать виртуальное окружение Python
       command: python3 -m venv venv
       args:
         chdir: "{{ bot_dir }}"
         creates: venv
 
-    - name: Install Python dependencies in virtualenv
+    - name: Установить зависимости Python в виртуальном окружении
       shell: |
         ./venv/bin/pip install --upgrade pip
         ./venv/bin/pip install -r requirements.txt
-      args:
-        chdir: "{{ bot_dir }}"
-
-    - name: Run the Telegram bot
-      shell: nohup ./venv/bin/python bot.py &
       args:
         chdir: "{{ bot_dir }}"
