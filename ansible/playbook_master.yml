@@ -51,3 +51,16 @@
         name: postgresql
         state: started
         enabled: yes
+
+    - name: Скопировать дамп dump.sql на сервер
+      copy:
+        src: "{{ local_config_dir }}/dump.sql"
+        dest: /tmp/dump.sql
+        owner: postgres
+        group: postgres
+        mode: '0644'
+
+    - name: Импорт дампа dump.sql (создание базы contacts)
+      become: true
+      become_user: postgres
+      shell: psql -f /tmp/dump.sql

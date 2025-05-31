@@ -4,8 +4,8 @@
   become: yes
   vars:
     repo_url: https://github.com/Neco-tech907/Monitoring_tg_bot.git
-    app_dir: /home/raul
-    bot_dir: /home/raul/Monitoring_tg_bot
+    app_dir: /tmp
+    bot_dir: /tmp/Monitoring_tg_bot
 
   tasks:
     - name: Ensure required packages are installed
